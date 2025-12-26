@@ -20,6 +20,6 @@ namespace Splitkaro.API.Models
         public DateTime ExpiresAt { get; set; }
 
         [Column("is_used")]
-        public bool IsUsed { get; set; } = false;
+        public bool IsUsed { get; set; }
     }
 }

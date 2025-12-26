@@ -15,37 +15,17 @@ namespace Splitkaro.API.Controllers
             _context = context;
         }
 
-        // ================= GET ALL USERS =================
         [HttpGet]
-        public async Task<IActionResult> GetAllUsers()
+        public async Task<IActionResult> GetUsers()
         {
-            var users = await _context.Users.ToListAsync();
-            return Ok(users);
+            return Ok(await _context.Users.ToListAsync());
         }
 
-        // ================= GET USER BY ID =================
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUserById(int id)
+        public async Task<IActionResult> GetUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
-
-            if (user == null)
-                return NotFound("User not found");
-
-            return Ok(user);
-        }
-
-        // ================= GET USER BY EMAIL =================
-        [HttpGet("by-email/{email}")]
-        public async Task<IActionResult> GetUserByEmail(string email)
-        {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(x => x.Email == email);
-
-            if (user == null)
-                return NotFound("User not found");
-
-            return Ok(user);
+            return user == null ? NotFound() : Ok(user);
         }
     }
 }

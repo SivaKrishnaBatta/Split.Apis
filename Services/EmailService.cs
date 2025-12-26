@@ -12,11 +12,11 @@ namespace Splitkaro.API.Services
             _config = config;
         }
 
-        public async Task SendOtp(string email, string otp)
+        public async Task SendOtp(string toEmail, string otp)
         {
-            var client = new SmtpClient("smtp.gmail.com")
+            var smtp = new SmtpClient(_config["EmailSettings:SmtpServer"])
             {
-                Port = 587,
+                Port = int.Parse(_config["EmailSettings:Port"]!),
                 Credentials = new NetworkCredential(
                     _config["EmailSettings:Username"],
                     _config["EmailSettings:Password"]
@@ -25,13 +25,13 @@ namespace Splitkaro.API.Services
             };
 
             var mail = new MailMessage(
-                _config["EmailSettings:FromEmail"],
-                email,
-                "Splitkaro OTP",
-                $"Your OTP is {otp}. Valid for 5 minutes."
+                _config["EmailSettings:FromEmail"]!,
+                toEmail,
+                "Your OTP",
+                $"Your OTP is {otp}. It is valid for 5 minutes."
             );
 
-            await client.SendMailAsync(mail);
+            await smtp.SendMailAsync(mail);
         }
     }
 }
