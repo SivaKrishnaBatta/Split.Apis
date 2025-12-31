@@ -4,24 +4,35 @@ using Splitkaro.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ================= SERVICES =================
+// ✅ CORS (Angular → .NET)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+// Controllers
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Register services
+// Email service
 builder.Services.AddScoped<EmailService>();
 
-// MySQL DbContext
+// DB Context
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    var cs = builder.Configuration.GetConnectionString("DefaultConnection");
-    options.UseMySql(cs, ServerVersion.AutoDetect(cs));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    );
 });
 
 var app = builder.Build();
 
-// ================= PIPELINE =================
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -29,5 +40,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// ✅ CORS MUST be here
+app.UseCors("AllowAngular");
+
+app.UseAuthorization();
 app.MapControllers();
 app.Run();

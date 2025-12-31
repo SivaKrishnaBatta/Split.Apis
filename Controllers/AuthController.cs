@@ -19,117 +19,100 @@ namespace Splitkaro.API.Controllers
             _emailService = emailService;
         }
 
-        // ================= SEND OTP =================
-        [HttpPost("send-otp")]
-        public async Task<IActionResult> SendOtp([FromBody] string email)
-        {
-            if (string.IsNullOrWhiteSpace(email))
-                return BadRequest("Email is required");
+        // ✅ SEND OTP
+[HttpPost("send-otp")]
+public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request)
+{
+    var otp = new Random().Next(100000, 999999).ToString();
 
-            var otp = new Random().Next(100000, 999999).ToString();
+    var record = new EmailOtp
+    {
+        Email = request.Email,
+        Otp = otp,
+        ExpiresAt = DateTime.UtcNow.AddMinutes(5),
+        IsUsed = false
+    };
 
-            var record = new EmailOtp
-            {
-                Email = email,
-                Otp = otp,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(5),
-                IsUsed = false
-            };
+    _context.EmailOtps.Add(record);
+    await _context.SaveChangesAsync();
 
-            _context.EmailOtps.Add(record);
-            await _context.SaveChangesAsync();
+    await _emailService.SendOtp(request.Email, otp);
 
-            await _emailService.SendOtp(email, otp);
+    return Ok(new { message = "OTP sent" });
 
-            return Ok("OTP sent (valid for 5 minutes)");
-        }
+}
 
-        // ================= RESEND OTP =================
-        [HttpPost("resend-otp")]
-        public async Task<IActionResult> ResendOtp([FromBody] string email)
-        {
-            if (string.IsNullOrWhiteSpace(email))
-                return BadRequest("Email is required");
 
-            // 1️⃣ Mark all previous OTPs as used
-            var oldOtps = await _context.EmailOtps
-                .Where(x => x.Email == email && !x.IsUsed)
-                .ToListAsync();
-
-            foreach (var otp in oldOtps)
-            {
-                otp.IsUsed = true;
-            }
-
-            // 2️⃣ Generate new OTP
-            var newOtp = new Random().Next(100000, 999999).ToString();
-
-            var record = new EmailOtp
-            {
-                Email = email,
-                Otp = newOtp,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(5),
-                IsUsed = false
-            };
-
-            _context.EmailOtps.Add(record);
-            await _context.SaveChangesAsync();
-
-            // 3️⃣ Send email
-            await _emailService.SendOtp(email, newOtp);
-
-            return Ok("OTP resent successfully (valid for 5 minutes)");
-        }
-
-        // ================= VERIFY OTP =================
+        // ✅ VERIFY OTP
         [HttpPost("verify-otp")]
         public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request)
         {
-            var data = await _context.EmailOtps
+            var otp = await _context.EmailOtps
                 .OrderByDescending(x => x.Id)
                 .FirstOrDefaultAsync(x =>
                     x.Email == request.Email &&
                     x.Otp == request.Otp &&
                     !x.IsUsed);
 
-            if (data == null)
-                return BadRequest("Invalid OTP");
+            if (otp == null || otp.ExpiresAt < DateTime.UtcNow)
+                return BadRequest("Invalid or expired OTP");
 
-            if (data.ExpiresAt < DateTime.UtcNow)
-                return BadRequest("OTP expired");
-
-            // Mark OTP as used
-            data.IsUsed = true;
+            otp.IsUsed = true;
             await _context.SaveChangesAsync();
 
-            // Check if user exists
-            var user = await _context.Users
-                .FirstOrDefaultAsync(x => x.Email == request.Email);
-
-            return Ok(new
-            {
-                isNewUser = user == null
-            });
+            return Ok(new { verified = true });
         }
 
-        // ================= COMPLETE PROFILE =================
-        [HttpPost("complete-profile")]
-        public async Task<IActionResult> CompleteProfile([FromBody] User user)
-        {
-            if (string.IsNullOrWhiteSpace(user.Email))
-                return BadRequest("Email is required");
+        // ✅ REGISTER (EMAIL MUST BE OTP VERIFIED)
+[HttpPost("register")]
+public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+{
+    // 1️⃣ Password validation
+    if (request.Password != request.ConfirmPassword)
+        return BadRequest("Passwords do not match");
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+    // 2️⃣ Ensure email OTP already verified
+    var otpVerified = await _context.EmailOtps
+        .AnyAsync(x => x.Email == request.Email && x.IsUsed);
 
-            return Ok("Profile saved successfully");
-        }
+    if (!otpVerified)
+        return BadRequest("Email not verified via OTP");
+
+    // 3️⃣ Prevent duplicate registration
+    var userExists = await _context.Users
+        .AnyAsync(x => x.Email == request.Email);
+
+    if (userExists)
+        return BadRequest("Email already registered");
+
+    // 4️⃣ Create user
+    var user = new User
+    {
+        Name = request.Name,
+        Email = request.Email,   // 🔒 locked to OTP email
+        Phone = request.Phone,
+       PasswordHash = PasswordService.HashPassword(request.Password),
+        CreatedAt = DateTime.UtcNow
+    };
+
+    _context.Users.Add(user);
+    await _context.SaveChangesAsync();
+
+    return Ok(new { message = "Registration successful" });
+}
+
     }
 
-    // ================= REQUEST DTO =================
+    // ✅ DTOs
+    public class SendOtpRequest
+    {
+        public string Email { get; set; } = string.Empty;
+    }
+
     public class VerifyOtpRequest
     {
         public string Email { get; set; } = string.Empty;
         public string Otp { get; set; } = string.Empty;
     }
+    
 }

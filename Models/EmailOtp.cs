@@ -16,10 +16,10 @@ namespace Splitkaro.API.Models
         [Column("otp")]
         public string Otp { get; set; } = string.Empty;
 
-        [Column("expires_at")]
+        [Column("expires_at")]          // ✅ FIX
         public DateTime ExpiresAt { get; set; }
 
-        [Column("is_used")]
-        public bool IsUsed { get; set; } = false;
+        [Column("is_used")]             // ✅ FIX
+        public bool IsUsed { get; set; }
     }
 }
