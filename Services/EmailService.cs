@@ -14,7 +14,7 @@ namespace Splitkaro.API.Services
 
         public async Task SendOtp(string toEmail, string otp)
         {
-            var smtp = new SmtpClient(_config["EmailSettings:SmtpServer"])
+            using var smtp = new SmtpClient(_config["EmailSettings:SmtpServer"])
             {
                 Port = int.Parse(_config["EmailSettings:Port"]!),
                 Credentials = new NetworkCredential(
@@ -24,11 +24,11 @@ namespace Splitkaro.API.Services
                 EnableSsl = true
             };
 
-            var mail = new MailMessage(
+            using var mail = new MailMessage(
                 _config["EmailSettings:FromEmail"]!,
                 toEmail,
                 "Your OTP",
-                $"Your OTP is {otp}. It is valid for 5 minutes."
+                $"Your OTP is {otp}. Valid for 5 minutes."
             );
 
             await smtp.SendMailAsync(mail);

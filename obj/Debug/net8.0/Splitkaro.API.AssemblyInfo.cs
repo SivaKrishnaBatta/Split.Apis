@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Splitkaro.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3b023471739290e0eac97af46106db922c703865")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f107e578e7cadca29da3cd94f11c6d2445caef99")]
 [assembly: System.Reflection.AssemblyProductAttribute("Splitkaro.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Splitkaro.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
