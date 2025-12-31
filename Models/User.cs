@@ -10,13 +10,19 @@ namespace Splitkaro.API.Models
         [Column("id")]
         public int Id { get; set; }
 
+        [Column("name")]
+        public string Name { get; set; } = string.Empty;
+
         [Column("email")]
         public string Email { get; set; } = string.Empty;
 
-        [Column("name")]
-        public string? Name { get; set; }
+        [Column("phone")]
+        public string Phone { get; set; } = string.Empty;
+
+        [Column("password_hash")]
+        public string PasswordHash { get; set; } = string.Empty;
 
         [Column("created_at")]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
     }
 }

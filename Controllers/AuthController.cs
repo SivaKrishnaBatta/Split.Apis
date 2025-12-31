@@ -19,27 +19,31 @@ namespace Splitkaro.API.Controllers
             _emailService = emailService;
         }
 
-        [HttpPost("send-otp")]
-        public async Task<IActionResult> SendOtp([FromBody] string email)
-        {
-            var otp = new Random().Next(100000, 999999).ToString();
+        // ✅ SEND OTP
+[HttpPost("send-otp")]
+public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request)
+{
+    var otp = new Random().Next(100000, 999999).ToString();
 
-            var record = new EmailOtp
-            {
-                Email = email,
-                Otp = otp,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(5),
-                IsUsed = false
-            };
+    var record = new EmailOtp
+    {
+        Email = request.Email,
+        Otp = otp,
+        ExpiresAt = DateTime.UtcNow.AddMinutes(5),
+        IsUsed = false
+    };
 
-            _context.EmailOtps.Add(record);
-            await _context.SaveChangesAsync();
+    _context.EmailOtps.Add(record);
+    await _context.SaveChangesAsync();
 
-            await _emailService.SendOtp(email, otp);
+    await _emailService.SendOtp(request.Email, otp);
 
-            return Ok("OTP sent");
-        }
+    return Ok(new { message = "OTP sent" });
 
+}
+
+
+        // ✅ VERIFY OTP
         [HttpPost("verify-otp")]
         public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request)
         {
@@ -56,11 +60,53 @@ namespace Splitkaro.API.Controllers
             otp.IsUsed = true;
             await _context.SaveChangesAsync();
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(x => x.Email == request.Email);
-
-            return Ok(new { isNewUser = user == null });
+            return Ok(new { verified = true });
         }
+
+        // ✅ REGISTER (EMAIL MUST BE OTP VERIFIED)
+[HttpPost("register")]
+public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+{
+    // 1️⃣ Password validation
+    if (request.Password != request.ConfirmPassword)
+        return BadRequest("Passwords do not match");
+
+    // 2️⃣ Ensure email OTP already verified
+    var otpVerified = await _context.EmailOtps
+        .AnyAsync(x => x.Email == request.Email && x.IsUsed);
+
+    if (!otpVerified)
+        return BadRequest("Email not verified via OTP");
+
+    // 3️⃣ Prevent duplicate registration
+    var userExists = await _context.Users
+        .AnyAsync(x => x.Email == request.Email);
+
+    if (userExists)
+        return BadRequest("Email already registered");
+
+    // 4️⃣ Create user
+    var user = new User
+    {
+        Name = request.Name,
+        Email = request.Email,   // 🔒 locked to OTP email
+        Phone = request.Phone,
+       PasswordHash = PasswordService.HashPassword(request.Password),
+        CreatedAt = DateTime.UtcNow
+    };
+
+    _context.Users.Add(user);
+    await _context.SaveChangesAsync();
+
+    return Ok(new { message = "Registration successful" });
+}
+
+    }
+
+    // ✅ DTOs
+    public class SendOtpRequest
+    {
+        public string Email { get; set; } = string.Empty;
     }
 
     public class VerifyOtpRequest
@@ -68,4 +114,5 @@ namespace Splitkaro.API.Controllers
         public string Email { get; set; } = string.Empty;
         public string Otp { get; set; } = string.Empty;
     }
+    
 }

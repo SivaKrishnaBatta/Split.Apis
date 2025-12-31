@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Rajkumar\\OneDrive\\Documents\\GitHub\\Split.Apis\\Splitkaro.API.csproj": {}
+    "C:\\Users\\sivak\\Desktop\\Splitkaro.API\\Splitkaro.API.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Rajkumar\\OneDrive\\Documents\\GitHub\\Split.Apis\\Splitkaro.API.csproj": {
+    "C:\\Users\\sivak\\Desktop\\Splitkaro.API\\Splitkaro.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Rajkumar\\OneDrive\\Documents\\GitHub\\Split.Apis\\Splitkaro.API.csproj",
+        "projectUniqueName": "C:\\Users\\sivak\\Desktop\\Splitkaro.API\\Splitkaro.API.csproj",
         "projectName": "Splitkaro.API",
-        "projectPath": "C:\\Users\\Rajkumar\\OneDrive\\Documents\\GitHub\\Split.Apis\\Splitkaro.API.csproj",
-        "packagesPath": "C:\\Users\\Rajkumar\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Rajkumar\\OneDrive\\Documents\\GitHub\\Split.Apis\\obj\\",
+        "projectPath": "C:\\Users\\sivak\\Desktop\\Splitkaro.API\\Splitkaro.API.csproj",
+        "packagesPath": "C:\\Users\\sivak\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\sivak\\Desktop\\Splitkaro.API\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Rajkumar\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\sivak\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -80,7 +80,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.122/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.100/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
